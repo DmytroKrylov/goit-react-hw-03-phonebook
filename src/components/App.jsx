@@ -2,6 +2,7 @@ import { Component } from 'react';
 import ContactForm from './ContactForm/ContactForm';
 import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
+import { v4 as uuidv4 } from 'uuid';
 
 class App extends Component {
   state = {
@@ -14,13 +15,31 @@ class App extends Component {
     filter: '',
   };
 
-  handleAddContact = newContact =>
-    this.setState(({ contacts }) => ({ contacts: [...contacts, newContact] }));
+  componentDidMount = () => {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(contacts);
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  };
+
+  componentDidUpdate = prevState => {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  };
+
+  handleAddContact = newContact => {
+    newContact.id = uuidv4();
+    this.setState(({ contacts }) => ({
+      contacts: [...contacts, newContact],
+    }));
+  };
 
   handleCheckContact = name => {
     const { contacts } = this.state;
     const isExistContact = !!contacts.find(contact => contact.name === name);
-    isExistContact && alert('Contact is already in contacs');
+    isExistContact && alert(`${name} is already in contacs`);
     return !isExistContact;
   };
 
